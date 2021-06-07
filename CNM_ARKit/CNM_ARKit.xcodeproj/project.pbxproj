@@ -12,9 +12,6 @@
 		5C6367F6266CD610004864C3 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5C6367F4266CD610004864C3 /* Main.storyboard */; };
 		5C6367F8266CD614004864C3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5C6367F7266CD614004864C3 /* Assets.xcassets */; };
 		5C6367FB266CD614004864C3 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5C6367F9266CD614004864C3 /* LaunchScreen.storyboard */; };
-		5C636810266CF693004864C3 /* submarine.dae in Resources */ = {isa = PBXBuildFile; fileRef = 5C63680F266CF692004864C3 /* submarine.dae */; };
-		5C636813266CF989004864C3 /* submarineSurface_Color.png in Resources */ = {isa = PBXBuildFile; fileRef = 5C636812266CF989004864C3 /* submarineSurface_Color.png */; };
-		5C636816266CFE2A004864C3 /* submarine.scn in Resources */ = {isa = PBXBuildFile; fileRef = 5C636815266CFE2A004864C3 /* submarine.scn */; };
 		5C636819266D04A7004864C3 /* fish.dae in Resources */ = {isa = PBXBuildFile; fileRef = 5C636818266D04A7004864C3 /* fish.dae */; };
 /* End PBXBuildFile section */
 
@@ -26,9 +23,6 @@
 		5C6367F7266CD614004864C3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		5C6367FA266CD614004864C3 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		5C6367FC266CD614004864C3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		5C63680F266CF692004864C3 /* submarine.dae */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml.dae; path = submarine.dae; sourceTree = "<group>"; };
-		5C636812266CF989004864C3 /* submarineSurface_Color.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = submarineSurface_Color.png; sourceTree = "<group>"; };
-		5C636815266CFE2A004864C3 /* submarine.scn */ = {isa = PBXFileReference; lastKnownFileType = file.bplist; path = submarine.scn; sourceTree = "<group>"; };
 		5C636818266D04A7004864C3 /* fish.dae */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml.dae; path = fish.dae; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -64,10 +58,7 @@
 			children = (
 				5C6367EE266CD610004864C3 /* AppDelegate.swift */,
 				5C6367F2266CD610004864C3 /* ViewController.swift */,
-				5C636812266CF989004864C3 /* submarineSurface_Color.png */,
 				5C636818266D04A7004864C3 /* fish.dae */,
-				5C63680F266CF692004864C3 /* submarine.dae */,
-				5C636815266CFE2A004864C3 /* submarine.scn */,
 				5C6367F4266CD610004864C3 /* Main.storyboard */,
 				5C6367F7266CD614004864C3 /* Assets.xcassets */,
 				5C6367F9266CD614004864C3 /* LaunchScreen.storyboard */,
@@ -133,13 +124,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5C636813266CF989004864C3 /* submarineSurface_Color.png in Resources */,
-				5C636816266CFE2A004864C3 /* submarine.scn in Resources */,
 				5C6367FB266CD614004864C3 /* LaunchScreen.storyboard in Resources */,
 				5C636819266D04A7004864C3 /* fish.dae in Resources */,
 				5C6367F8266CD614004864C3 /* Assets.xcassets in Resources */,
 				5C6367F6266CD610004864C3 /* Main.storyboard in Resources */,
-				5C636810266CF693004864C3 /* submarine.dae in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

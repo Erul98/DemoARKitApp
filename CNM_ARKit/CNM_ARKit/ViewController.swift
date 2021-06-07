@@ -17,15 +17,12 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     var lastPanLocation:SCNVector3!
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         // Set the view's delegate
         sceneView.delegate = self
-        
         // Show statistics such as fps and timing information
         sceneView.showsStatistics = true
         sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints]
         sceneView.autoenablesDefaultLighting = true
-        
         // Create a new scene
         let scene = SCNScene()
         // Set the scene to the view
@@ -54,99 +51,53 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     }
     
     // MARK: - OTHER FUNCTION
-    func addBox(x: Float = 0, y: Float = 0, z: Float = -0.2) {
-        // 1
-        let box = SCNBox(width: 0.1, height: 0.1, length: 0.1, chamferRadius: 0)
-        
-        // 2
-        let colors = [UIColor.green, // front
-                      UIColor.red, // right
-                      UIColor.blue, // back
-                      UIColor.yellow, // left
-                      UIColor.purple, // top
-                      UIColor.gray] // bottom
-        let sideMaterials = colors.map { color -> SCNMaterial in
-            let material = SCNMaterial()
-            material.diffuse.contents = color
-            material.locksAmbientWithDiffuse = true
-            return material
-        }
-        box.materials = sideMaterials
-        
-        // 3
-        let fishScene = SCNScene(named: "fish.dae")
-        guard let fishNode = fishScene?.rootNode.childNode(withName: "fishModel", recursively: true) else {
-            print("Fish model not found")
-            return
-        }
-        self.node = fishNode
-        //        self.node = submarineNode
-        //self.node.geometry = box
-        self.node.position = SCNVector3(x, y, z)
-        //        submarineNode.position = SCNVector3(x, y, z)
-        lastPanLocation = SCNVector3(x, y, z)
-        //4
-        sceneView.scene.rootNode.addChildNode(self.node)
-    }
-    
+    // Add model to new positionn
     private func addTapGesture() {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(didTap(_:)))
         self.sceneView.addGestureRecognizer(tapGesture)
     }
     
     @objc func didTap(_ gesture: UITapGestureRecognizer) {
-        // 1
         let tapLocation = gesture.location(in: self.sceneView)
         let results = self.sceneView.hitTest(tapLocation, types: .featurePoint)
-        
-        // 2
         guard let result = results.first else {
             return
         }
-        
-        // 3
         let translation = result.worldTransform.translation
-        
-        //4
         guard let node = self.node else {
-            self.addBox(x: translation.x, y: translation.y, z: translation.z)
+            self.addNewLocationForFish(x: translation.x, y: translation.y, z: translation.z)
             return
         }
         node.position = SCNVector3Make(translation.x, translation.y, translation.z)
         self.sceneView.scene.rootNode.addChildNode(self.node)
     }
     
+    // Scale model
     private func addPinchGesture() {
         let pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(didPinch(_:)))
         self.sceneView.addGestureRecognizer(pinchGesture)
     }
     
     @objc func didPinch(_ gesture: UIPinchGestureRecognizer) {
-        
         switch gesture.state {
-        // 1
         case .began:
             gesture.scale = CGFloat(node.scale.x)
-        // 2
         case .changed:
             var newScale: SCNVector3
-            // a
-            if gesture.scale < 0.5 {
-                newScale = SCNVector3(x: 0.5, y: 0.5, z: 0.5)
-                // b
-            } else if gesture.scale > 3 {
-                newScale = SCNVector3(3, 3, 3)
-                // c
+            if gesture.scale < 0.1 {
+                newScale = SCNVector3(x: 0.1, y: 0.1, z: 0.1)
+            } else if gesture.scale > 1 {
+                newScale = SCNVector3(1, 1, 1)
             } else {
                 newScale = SCNVector3(gesture.scale, gesture.scale, gesture.scale)
             }
-            // d
             node.scale = newScale
         default:
             break
         }
     }
     
+    // Rotate the model
     private func addRotationGesture() {
         let panGesture = UIRotationGestureRecognizer(target: self, action: #selector(didRotate(_:)))
         self.sceneView.addGestureRecognizer(panGesture)
@@ -167,6 +118,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         }
     }
     
+    // Move the model to new position
     private func addMoveGesture() {
         let tapGesture = UIPanGestureRecognizer(target: self,
                                                 action: #selector(moveModel))
@@ -180,21 +132,34 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         case .began:
             // existing logic from previous approach. Keep this.
             guard let hitNodeResult = view.hitTest(location, options: nil).first else { return }
-            panStartZ = CGFloat(view.projectPoint(lastPanLocation!).z)
             // lastPanLocation is new
-            lastPanLocation = hitNodeResult.worldCoordinates
+            self.lastPanLocation = hitNodeResult.worldCoordinates
+            self.panStartZ = CGFloat(view.projectPoint(lastPanLocation).z)
         case .changed:
             // This entire case has been replaced
-            let worldTouchPosition = view.unprojectPoint(SCNVector3(location.x, location.y, panStartZ!))
+            guard self.panStartZ != nil else { return }
+            let worldTouchPosition = view.unprojectPoint(SCNVector3(location.x, location.y, self.panStartZ))
             let movementVector = SCNVector3(
-                worldTouchPosition.x - lastPanLocation!.x,
-                worldTouchPosition.y - lastPanLocation!.y,
-                worldTouchPosition.z - lastPanLocation!.z)
+                worldTouchPosition.x - self.lastPanLocation.x,
+                worldTouchPosition.y - self.lastPanLocation.y,
+                worldTouchPosition.z - self.lastPanLocation.z)
             self.node.localTranslate(by: movementVector)
             self.lastPanLocation = worldTouchPosition
         default:
             break
         }
+    }
+    
+    func addNewLocationForFish(x: Float = 0, y: Float = 0, z: Float = -0.2) {
+        // get node from childNode of scene fish model
+        guard let fishNode = SCNScene(named: "fish.dae")?.rootNode.childNode(withName: "fishModel", recursively: true) else {
+            print("Fish model not found")
+            return
+        }
+        self.node = fishNode
+        self.node.scale = SCNVector3(x: 0.1, y: 0.1, z: 0.1)
+        self.node.position = SCNVector3(x, y, z)
+        sceneView.scene.rootNode.addChildNode(self.node)
     }
     
     // MARK: - ARSCNViewDelegate
