@@ -12,9 +12,8 @@ import ARKit
 class ViewController: UIViewController, ARSCNViewDelegate {
     
     @IBOutlet var sceneView: ARSCNView!
-    private var node: SCNNode!
-    var panStartZ: CGFloat!
-    var lastPanLocation:SCNVector3!
+    private var fishNode: SCNNode!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Set the view's delegate
@@ -63,13 +62,13 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         guard let result = results.first else {
             return
         }
-        let translation = result.worldTransform.translation
-        guard let node = self.node else {
-            self.addNewLocationForFish(x: translation.x, y: translation.y, z: translation.z)
+        let translation = result.worldTransform.translation3x3
+        guard let node = self.fishNode else {
+            self.addNewLocationForFish()
             return
         }
         node.position = SCNVector3Make(translation.x, translation.y, translation.z)
-        self.sceneView.scene.rootNode.addChildNode(self.node)
+        self.sceneView.scene.rootNode.addChildNode(self.fishNode)
     }
     
     // Scale model
@@ -81,7 +80,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     @objc func didPinch(_ gesture: UIPinchGestureRecognizer) {
         switch gesture.state {
         case .began:
-            gesture.scale = CGFloat(node.scale.x)
+            gesture.scale = CGFloat(fishNode.scale.x)
         case .changed:
             var newScale: SCNVector3
             if gesture.scale < 0.1 {
@@ -91,7 +90,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
             } else {
                 newScale = SCNVector3(gesture.scale, gesture.scale, gesture.scale)
             }
-            node.scale = newScale
+            fishNode.scale = newScale
         default:
             break
         }
@@ -108,10 +107,8 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     @objc func didRotate(_ gesture: UIRotationGestureRecognizer) {
         switch gesture.state {
         case .changed:
-            // 1
-            self.node.eulerAngles.y = self.lastRotation + Float(gesture.rotation)
+            self.fishNode.eulerAngles.y = self.lastRotation + Float(gesture.rotation)
         case .ended:
-            // 2
             self.lastRotation += Float(gesture.rotation)
         default:
             break
@@ -120,46 +117,28 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     
     // Move the model to new position
     private func addMoveGesture() {
-        let tapGesture = UIPanGestureRecognizer(target: self,
-                                                action: #selector(moveModel))
+        let tapGesture = UIPanGestureRecognizer(target: self, action: #selector(moveModel))
         self.sceneView.addGestureRecognizer(tapGesture)
     }
     
     @objc func moveModel(panGesture: UIPanGestureRecognizer) {
         guard let view = self.sceneView else { return }
         let location = panGesture.location(in: view)
-        switch panGesture.state {
-        case .began:
-            // existing logic from previous approach. Keep this.
-            guard let hitNodeResult = view.hitTest(location, options: nil).first else { return }
-            // lastPanLocation is new
-            self.lastPanLocation = hitNodeResult.worldCoordinates
-            self.panStartZ = CGFloat(view.projectPoint(lastPanLocation).z)
-        case .changed:
-            // This entire case has been replaced
-            guard self.panStartZ != nil else { return }
-            let worldTouchPosition = view.unprojectPoint(SCNVector3(location.x, location.y, self.panStartZ))
-            let movementVector = SCNVector3(
-                worldTouchPosition.x - self.lastPanLocation.x,
-                worldTouchPosition.y - self.lastPanLocation.y,
-                worldTouchPosition.z - self.lastPanLocation.z)
-            self.node.localTranslate(by: movementVector)
-            self.lastPanLocation = worldTouchPosition
-        default:
-            break
-        }
+        guard let hitNodeResult = view.hitTest(location, types: .featurePoint).first else { return }
+        let worldTransform = hitNodeResult.worldTransform.translation3x3
+        let position = SCNVector3(worldTransform.x, worldTransform.y, worldTransform.z)
+        self.fishNode.position = position
     }
     
-    func addNewLocationForFish(x: Float = 0, y: Float = 0, z: Float = -0.2) {
+    func addNewLocationForFish() {
         // get node from childNode of scene fish model
         guard let fishNode = SCNScene(named: "fish.dae")?.rootNode.childNode(withName: "fishModel", recursively: true) else {
             print("Fish model not found")
             return
         }
-        self.node = fishNode
-        self.node.scale = SCNVector3(x: 0.1, y: 0.1, z: 0.1)
-        self.node.position = SCNVector3(x, y, z)
-        sceneView.scene.rootNode.addChildNode(self.node)
+        self.fishNode = fishNode
+        self.fishNode.scale = SCNVector3(x: 0.1, y: 0.1, z: 0.1)
+        sceneView.scene.rootNode.addChildNode(self.fishNode)
     }
     
     // MARK: - ARSCNViewDelegate
@@ -189,9 +168,8 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     }
 }
 
-//5
 extension float4x4 {
-    var translation: SIMD3<Float> {
+    var translation3x3: SIMD3<Float> {
         let translation = self.columns.3
         return SIMD3<Float>(translation.x, translation.y, translation.z)
     }
